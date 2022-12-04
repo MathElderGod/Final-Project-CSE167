@@ -38,6 +38,7 @@ public:
     void rotateUp(const float degrees);
     void zoom(const float factor);
     void computeMatrices(void);
+    void computeLightCameraMatrices(void);
     void reset(void);
 };
 

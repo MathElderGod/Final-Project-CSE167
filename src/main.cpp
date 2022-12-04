@@ -15,6 +15,12 @@ static const char* title = "Scene viewer";
 static const glm::vec4 background(0.1f, 0.2f, 0.3f, 1.0f);
 static Scene scene;
 static bool switchCamera = false;
+// depth Map frame Buffer Object
+GLuint depthMapFrameBufferObject;
+// 2D depthMap Texture
+GLuint depthMap;
+// filling dimensions for shadow width and shadow height
+const GLuint SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 
 #include "hw3AutoScreenshots.h"
 
@@ -38,24 +44,11 @@ void initialize(void){
     printHelp();
     glClearColor(background[0], background[1], background[2], background[3]); // background color
     glViewport(0,0,width,height);
-    
-    // Initialize scene
-    scene.init();
 
-    // Enable depth test
-    glEnable(GL_DEPTH_TEST);
-}
+    //create a frame buffer object for rendering the depth map
+    glGenFramebuffers(1, &depthMapFrameBufferObject);
 
-void display(void) {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // generate the fram buffer object
-    GLuint depthMapFBO;
-    glGenFramebuffers(1, &depthMapFBO);
-
-    // create 2D TEXTURE for depth map
-    const GLuint SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-    GLuint depthMap;
+    // create a 2D texture that we will use as the framebuffers depth buffer
     glGenTextures(1, &depthMap);
     glBindTexture(GL_TEXTURE_2D, depthMap);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
@@ -66,19 +59,31 @@ void display(void) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-
-    // attach depth mapt to the depthMapFBOS depth buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFrameBufferObject);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
         GL_TEXTURE_2D, depthMap, 0);
     glDrawBuffer(GL_NONE); // Omitting color data
     glReadBuffer(GL_NONE); // Omitting color data
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        return;
-    }
+    // Initialize scene
+    scene.init();
+
+    // Enable depth test
+    glEnable(GL_DEPTH_TEST);
+}
+
+void display(void) {
+
+    // 1. first render to depth map "FIRST PASS"
+
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
+    // 2. then render scene as normal with shadow maping using (using depth map) "SECOND PASS"
+
+
+
     if (switchCamera == false) {
         scene.draw();
     }

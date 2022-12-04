@@ -88,6 +88,15 @@ void Camera::computeMatrices(){
                      0.0f, 0.0f, -2.0f*zFar*zNear/(zFar-zNear), 0.0f);
 }
 
+void Camera::computeLightCameraMatrices() {
+    float near_plane = -1.0f, far_plane = 10.0f;
+    proj = glm::ortho(-5.5f, 5.5f, -5.5f, 5.5f, near_plane, far_plane);
+    view = glm::lookAt(glm::vec3(3.0f, 2.0f, 2.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f),
+        glm::vec3(0.0f, 2.0f, 0.0f));
+}
+
+
 void Camera::reset(){
     eye = eye_default;// position of the eye
     target = target_default;  // look at target

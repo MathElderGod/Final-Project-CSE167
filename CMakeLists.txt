@@ -12,7 +12,7 @@ file(
 )
 
 # Add executables
-add_executable(ModelViewer ${SOURCES_SCENE_VIEWER})
+add_executable(ModelViewer ${SOURCES_SCENE_VIEWER} "include/DepthShader.h" )
 
 # Include headers
 set(

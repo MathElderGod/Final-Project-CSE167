@@ -11,7 +11,6 @@ Scene.cpp contains the implementation of the draw command
 
 using namespace glm;
 void Scene::draw(void) {
-    lightCamera->computeMatrices();
     // Pre-draw sequence: assign uniforms that are the same for all Geometry::draw call.  These uniforms include the camera view, proj, and the lights.  These uniform do not include modelview and material parameters.
     realCamera->computeMatrices();
     shader->view = realCamera->view;
@@ -98,16 +97,16 @@ void Scene::draw(void) {
 
 void Scene::drawLightCameraView() {
     // Pre-draw sequence: assign uniforms that are the same for all Geometry::draw call.  These uniforms include the camera view, proj, and the lights.  These uniform do not include modelview and material parameters.
-    lightCamera->computeMatrices();
-    shader->view = lightCamera->view;
-    shader->projection = lightCamera->proj;
-    shader->nlights = light.size();
-    shader->lightpositions.resize(shader->nlights);
-    shader->lightcolors.resize(shader->nlights);
+    lightCamera->computeLightCameraMatrices();
+    depthShader->view = lightCamera->view;
+    depthShader->projection = lightCamera->proj;
+    depthShader->nlights = light.size();
+    depthShader->lightpositions.resize(depthShader->nlights);
+    depthShader->lightcolors.resize(depthShader->nlights);
     int count = 0;
     for (std::pair<std::string, Light*> entry : light) {
-        shader->lightpositions[count] = (entry.second)->position;
-        shader->lightcolors[count] = (entry.second)->color;
+        depthShader->lightpositions[count] = (entry.second)->position;
+        depthShader->lightcolors[count] = (entry.second)->color;
         count++;
     }
 
@@ -159,11 +158,11 @@ void Scene::drawLightCameraView() {
              */
             mat4 M = cur->modeltransforms[i];
 
-            shader->modelview = cur_VM * M; // DONE: HW3: Without updating cur_VM, modelview would just be camera's view matrix.
-            shader->material = (cur->models[i])->material;
+            depthShader->modelview = cur_VM * M; // DONE: HW3: Without updating cur_VM, modelview would just be camera's view matrix.
+            depthShader->material = (cur->models[i])->material;
 
             // The draw command
-            shader->setUniforms();
+            depthShader->setUniforms();
             (cur->models[i])->geometry->draw();
         }
 

@@ -15,6 +15,7 @@
 
 #include "Camera.h"
 #include "SurfaceShader.h"
+#include "DepthShader.h"
 #include "Light.h"
 #include "Geometry.h"
 #include "Material.h"
@@ -36,6 +37,7 @@ public:
     Camera* realCamera;
     Camera* lightCamera;
     SurfaceShader* shader;
+    DepthShader* depthShader;
     // The following are containers of objects serving as the object palettes.
     // The containers store pointers so that they can also store derived class objects.
     std::map< std::string, Geometry* > geometry;
