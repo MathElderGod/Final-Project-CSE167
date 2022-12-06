@@ -16,7 +16,7 @@ static const glm::vec4 background(0.1f, 0.2f, 0.3f, 1.0f);
 static Scene scene;
 static bool switchCamera = false;
 // depth Map frame Buffer Object
-GLuint depthMapFrameBufferObject;
+GLuint depthMapFBO;
 // 2D depthMap Texture
 GLuint depthMap;
 // filling dimensions for shadow width and shadow height
@@ -46,7 +46,7 @@ void initialize(void){
     glViewport(0,0,width,height);
 
     //create a frame buffer object for rendering the depth map
-    glGenFramebuffers(1, &depthMapFrameBufferObject);
+    glGenFramebuffers(1, &depthMapFBO);
 
     // create a 2D texture that we will use as the framebuffers depth buffer
     glGenTextures(1, &depthMap);
@@ -59,7 +59,7 @@ void initialize(void){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFrameBufferObject);
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
         GL_TEXTURE_2D, depthMap, 0);
     glDrawBuffer(GL_NONE); // Omitting color data
@@ -69,27 +69,53 @@ void initialize(void){
     // Initialize scene
     scene.init();
 
+    scene.shader->shadowMap = depthMap;
+
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
 }
 
 void display(void) {
 
+    // 1. first render to depth map
+    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glUseProgram(scene.depthShader->program);
+    scene.drawLightCameraView();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // 2. then render scene as normal with shadow mapping (using depth map)
+    glViewport(0, 0, width, height);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glUseProgram(scene.shader->program);
+    scene.draw();
+
+    
     // 1. first render to depth map "FIRST PASS"
 
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     // 2. then render scene as normal with shadow maping using (using depth map) "SECOND PASS"
 
+    
 
+    //if (switchCamera == false) {
+    //    glViewport(0, 0, width, height);
+    //    glUseProgram(scene.shader->program);
+    //    scene.draw();
+    //}
+    //else {
+        //glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    //    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+    //    glUseProgram(scene.depthShader->program);
 
-    if (switchCamera == false) {
-        scene.draw();
-    }
-    else {
-        scene.drawLightCameraView();
-    }
+    //    scene.drawLightCameraView();
+    //}
+
+    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
     
     
     glutSwapBuffers();

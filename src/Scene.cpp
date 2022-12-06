@@ -15,6 +15,7 @@ void Scene::draw(void) {
     realCamera->computeMatrices();
     shader->view = realCamera->view;
     shader->projection = realCamera->proj;
+    shader->lightproj = lightCamera->proj;
     shader->nlights = light.size();
     shader->lightpositions.resize(shader->nlights);
     shader->lightcolors.resize(shader->nlights);
@@ -37,9 +38,6 @@ void Scene::draw(void) {
     // HW3: The depth-first search for the node traversal has already been implemented (cur, dfs_stack).
     // HW3: All you have to do is to also update the states of (cur_VM, matrix_stack) alongside the traversal.  You will only need to modify starting from this line.
     dfs_stack.push(cur);
-    /**
-     * DONE: (HW3 hint: you should do something here)
-     */
     matrix_stack.push(cur_VM);
     // Compute total number of connectivities in the graph; this would be an upper bound for
     // the stack size in the depth first search over the directed acyclic graph
@@ -59,24 +57,19 @@ void Scene::draw(void) {
 
         // top-pop the stacks
         cur = dfs_stack.top();  dfs_stack.pop();
-        /**
-         * DONE: (HW3 hint: you should do something here)
-         */
         cur_VM = matrix_stack.top(); matrix_stack.pop();
 
         // draw all the models at the current node
         for (size_t i = 0; i < cur->models.size(); i++) {
             // Prepare to draw the geometry. Assign the modelview and the material.
 
-            /**
-             * DONE: (HW3 hint: you should do something here)
-             */
             mat4 M = cur->modeltransforms[i];
 
             shader->modelview = cur_VM * M; // DONE: HW3: Without updating cur_VM, modelview would just be camera's view matrix.
             shader->material = (cur->models[i])->material;
 
             // The draw command
+            //shader->setUniforms(light["sun"]->shadowMapTexture);
             shader->setUniforms();
             (cur->models[i])->geometry->draw();
         }
@@ -100,7 +93,7 @@ void Scene::drawLightCameraView() {
     lightCamera->computeLightCameraMatrices();
     depthShader->view = lightCamera->view;
     depthShader->projection = lightCamera->proj;
-    depthShader->nlights = light.size();
+    /*depthShader->nlights = light.size();
     depthShader->lightpositions.resize(depthShader->nlights);
     depthShader->lightcolors.resize(depthShader->nlights);
     int count = 0;
@@ -108,7 +101,7 @@ void Scene::drawLightCameraView() {
         depthShader->lightpositions[count] = (entry.second)->position;
         depthShader->lightcolors[count] = (entry.second)->color;
         count++;
-    }
+    }*/
 
     // Define stacks for depth-first search (DFS)
     std::stack < Node* > dfs_stack;
@@ -122,9 +115,6 @@ void Scene::drawLightCameraView() {
     // HW3: The depth-first search for the node traversal has already been implemented (cur, dfs_stack).
     // HW3: All you have to do is to also update the states of (cur_VM, matrix_stack) alongside the traversal.  You will only need to modify starting from this line.
     dfs_stack.push(cur);
-    /**
-     * DONE: (HW3 hint: you should do something here)
-     */
     matrix_stack.push(cur_VM);
     // Compute total number of connectivities in the graph; this would be an upper bound for
     // the stack size in the depth first search over the directed acyclic graph
@@ -144,22 +134,16 @@ void Scene::drawLightCameraView() {
 
         // top-pop the stacks
         cur = dfs_stack.top();  dfs_stack.pop();
-        /**
-         * DONE: (HW3 hint: you should do something here)
-         */
         cur_VM = matrix_stack.top(); matrix_stack.pop();
 
         // draw all the models at the current node
         for (size_t i = 0; i < cur->models.size(); i++) {
             // Prepare to draw the geometry. Assign the modelview and the material.
 
-            /**
-             * DONE: (HW3 hint: you should do something here)
-             */
             mat4 M = cur->modeltransforms[i];
 
-            depthShader->modelview = cur_VM * M; // DONE: HW3: Without updating cur_VM, modelview would just be camera's view matrix.
-            depthShader->material = (cur->models[i])->material;
+            depthShader->modelview = cur_VM * M; 
+            //depthShader->material = (cur->models[i])->material;
 
             // The draw command
             depthShader->setUniforms();
@@ -169,13 +153,9 @@ void Scene::drawLightCameraView() {
         // Continue the DFS: put all the child nodes of the current node in the stack
         for (size_t i = 0; i < cur->childnodes.size(); i++) {
             dfs_stack.push(cur->childnodes[i]);
-            /**
-             * DONE: (HW3 hint: you should do something here)
-             */
             mat4 T = cur->childtransforms[i];
             matrix_stack.push(cur_VM * T);
         }
 
-    } // End of DFS while loop.
-    // HW3: Your code will only be above this line.
+    }
 }

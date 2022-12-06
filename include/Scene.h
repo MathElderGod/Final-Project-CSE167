@@ -84,6 +84,7 @@ public:
         delete realCamera;
         delete lightCamera;
         delete shader;
+        delete depthShader;
     }
 };
 

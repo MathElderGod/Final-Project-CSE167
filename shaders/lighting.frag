@@ -2,9 +2,12 @@
 
 in vec4 position; // raw position in the model coord
 in vec3 normal;   // raw normal in the model coord
+in vec2 coords;
+ 
 
 uniform mat4 modelview; // from model coord to eye coord
 uniform mat4 view;      // from world coord to eye coord
+uniform mat4 lightproj;
 
 // Material parameters
 uniform vec4 ambient;
@@ -12,6 +15,7 @@ uniform vec4 diffuse;
 uniform vec4 specular;
 uniform vec4 emision;
 uniform float shininess;
+uniform sampler2D shadowMap;
 
 // Light source parameters
 const int maximal_allowed_lights = 10;
@@ -23,6 +27,24 @@ uniform vec4 lightcolors[ maximal_allowed_lights ];
 // Output the frag color
 out vec4 fragColor;
 
+
+float ShadowCalculation(){
+    // vec4 fragPosLightSpace = lightproj * modelview * position;
+    vec4 fragPosLightSpace = lightproj * lightView * model * position;
+
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(shadowMap, projCoords.xy).r; 
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    // check whether current frag pos is in shadow
+    float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
+
+    return shadow;
+}  
 
 void main (void){
     if (!enablelighting){
@@ -56,6 +78,8 @@ void main (void){
 
         // keep track of the ongoing sum for all colors
         vec3 sumOfColors = vec3(0.0f, 0.0f, 0.0f);
+        
+        float shadow = ShadowCalculation();
 
         for(int j = 0; j < nlights; j++){
              
@@ -71,12 +95,22 @@ void main (void){
              // get the half way vector 
              vec3 h = normalize(v.xyz + l.xyz);
 
-             sumOfColors += ( ambient.xyz + diffuse.xyz * max( dot(n, l), 0.0f) + specular.xyz * pow( max( dot(n, h), 0.0f), shininess) ) * lightcolors[j].xyz;
+             sumOfColors += ( ambient.xyz + (1.0f - shadow) * (diffuse.xyz * max( dot(n, l), 0.0f) + specular.xyz * pow( max( dot(n, h), 0.0f), shininess) )) * lightcolors[j].xyz;
         }
         // get the final reflected color R
         vec3 R = emision.xyz + sumOfColors;
 
+
         // output the final reflected color R
         fragColor = vec4(R.x, R.y, R.z, 1.0f);
+
+        // float depthSampled = texture(shadowMap, coords);
+        //fragColor = vec4(vec3(texture(shadowMap, coords)), 1.0f); 
+
+
+
+        //fragColor = vec4(vec3(shadow), 1.0f);
+
+
     }
 }

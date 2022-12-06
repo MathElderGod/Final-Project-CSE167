@@ -126,22 +126,22 @@ void Scene::init(void){
 
     // put the light camera
     lightCamera = new Camera;
-    lightCamera->target_default = vec3(0.0f, 1.0f, 0.0f);
+    lightCamera->target_default = vec3(0.0f, 0.0f, 0.0f);
     lightCamera->eye_default = glm::vec3(20.0f, 8.0f, 6.0f);
     lightCamera->up_default = vec3(0.0f, 1.0f, 0.0f);
     lightCamera->reset();
 
     // Initialize shader
     shader = new SurfaceShader;
-    shader -> read_source( "shaders/projective.vert", "shaders/depth.frag" );
+    shader -> read_source( "shaders/projective.vert", "shaders/lighting.frag" );
     shader -> compile();
-    glUseProgram(shader -> program);
+    //glUseProgram(shader -> program);
     shader -> initUniforms();
 
     depthShader = new DepthShader;
     depthShader->read_source("shaders/lightSpace.vert", "shaders/depth.frag");
     depthShader->compile();
-    glUseProgram(depthShader->program);
+    //glUseProgram(depthShader->program);
     depthShader->initUniforms();
 
 
