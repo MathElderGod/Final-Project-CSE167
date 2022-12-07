@@ -8,6 +8,7 @@ in vec2 coords;
 uniform mat4 modelview; // from model coord to eye coord
 uniform mat4 view;      // from world coord to eye coord
 uniform mat4 lightproj;
+uniform mat4 lightview;
 
 // Material parameters
 uniform vec4 ambient;
@@ -29,8 +30,8 @@ out vec4 fragColor;
 
 
 float ShadowCalculation(){
-    // vec4 fragPosLightSpace = lightproj * modelview * position;
-    vec4 fragPosLightSpace = lightproj * lightView * model * position;
+    mat4 model = inverse(view) * modelview;
+    vec4 fragPosLightSpace = lightproj * lightview * model * position;
 
     // perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -41,7 +42,13 @@ float ShadowCalculation(){
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
     // check whether current frag pos is in shadow
-    float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
+
+    float bias = 0.005f;
+    float shadow = currentDepth - bias > closestDepth  ? 1.0f : 0.0f; 
+
+    if (currentDepth > 1.0f) {
+        shadow = 0.0f;
+    }
 
     return shadow;
 }  
@@ -100,17 +107,7 @@ void main (void){
         // get the final reflected color R
         vec3 R = emision.xyz + sumOfColors;
 
-
         // output the final reflected color R
         fragColor = vec4(R.x, R.y, R.z, 1.0f);
-
-        // float depthSampled = texture(shadowMap, coords);
-        //fragColor = vec4(vec3(texture(shadowMap, coords)), 1.0f); 
-
-
-
-        //fragColor = vec4(vec3(shadow), 1.0f);
-
-
     }
 }

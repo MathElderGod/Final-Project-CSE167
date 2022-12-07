@@ -56,8 +56,8 @@ void initialize(void){
         GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
@@ -90,33 +90,6 @@ void display(void) {
     glBindTexture(GL_TEXTURE_2D, depthMap);
     glUseProgram(scene.shader->program);
     scene.draw();
-
-    
-    // 1. first render to depth map "FIRST PASS"
-
-
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    // 2. then render scene as normal with shadow maping using (using depth map) "SECOND PASS"
-
-    
-
-    //if (switchCamera == false) {
-    //    glViewport(0, 0, width, height);
-    //    glUseProgram(scene.shader->program);
-    //    scene.draw();
-    //}
-    //else {
-        //glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-    //    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-    //    glUseProgram(scene.depthShader->program);
-
-    //    scene.drawLightCameraView();
-    //}
-
-    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    
     
     glutSwapBuffers();
     glFlush();

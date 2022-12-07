@@ -89,8 +89,8 @@ void Camera::computeMatrices(){
 }
 
 void Camera::computeLightCameraMatrices() {
-    float near_plane = 5.0f, far_plane = 50.0f;
-    proj = glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, near_plane, far_plane);
+    float near_plane = 5.0f, far_plane = 30.0f;
+    proj = glm::ortho(-3.0f, 3.0f, -3.0f, 3.0f, near_plane, far_plane);
     view = glm::lookAt(glm::vec3(20.0f, 8.0f, 6.0f),
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 1.0f, 0.0f));

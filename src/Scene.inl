@@ -115,7 +115,7 @@ void Scene::init(void){
     node["world"]->childtransforms.push_back(translate(vec3(-1.8f, 0.0f, 0.0f)) * rotate(90.0f * float(M_PI) / 180.0f, vec3(0.0f, 1.0f, 0.0f)));
 
     node["world"]->models.push_back(model["floor"]);
-    node["world"]->modeltransforms.push_back(translate(vec3(0.0f, -0.01f, 0.0f)) * scale(vec3(10.0f, 0.0f, 5.5f)));
+    node["world"]->modeltransforms.push_back(translate(vec3(0.0f, -0.01f, 0.0f)) * scale(vec3(40.0f, 0.1f, 40.0f)));
 
     // Put the real camera
     realCamera = new Camera;

@@ -14,6 +14,7 @@ void Scene::draw(void) {
     // Pre-draw sequence: assign uniforms that are the same for all Geometry::draw call.  These uniforms include the camera view, proj, and the lights.  These uniform do not include modelview and material parameters.
     realCamera->computeMatrices();
     shader->view = realCamera->view;
+    shader->lightview = lightCamera->view;
     shader->projection = realCamera->proj;
     shader->lightproj = lightCamera->proj;
     shader->nlights = light.size();
@@ -34,9 +35,6 @@ void Scene::draw(void) {
     Node* cur = node["world"]; // root of the tree
     mat4 cur_VM = realCamera->view; // HW3: You will update this current modelview during the depth first search.  Initially, we are at the "world" node, whose modelview matrix is just camera's view matrix.
 
-    // HW3: The following is the beginning of the depth-first search algorithm.
-    // HW3: The depth-first search for the node traversal has already been implemented (cur, dfs_stack).
-    // HW3: All you have to do is to also update the states of (cur_VM, matrix_stack) alongside the traversal.  You will only need to modify starting from this line.
     dfs_stack.push(cur);
     matrix_stack.push(cur_VM);
     // Compute total number of connectivities in the graph; this would be an upper bound for
@@ -44,9 +42,6 @@ void Scene::draw(void) {
     int total_number_of_edges = 0;
     for (const auto& n : node) total_number_of_edges += n.second->childnodes.size();
 
-    // If you want to print some statistics of your scene graph
-    // std::cout << "total numb of nodes = " << node.size() << std::endl;
-    // std::cout << "total number of edges = " << total_number_of_edges << std::endl;
 
     while (!dfs_stack.empty()) {
         // Detect whether the search runs into infinite loop by checking whether the stack is longer than the number of edges in the graph.
@@ -62,14 +57,12 @@ void Scene::draw(void) {
         // draw all the models at the current node
         for (size_t i = 0; i < cur->models.size(); i++) {
             // Prepare to draw the geometry. Assign the modelview and the material.
-
             mat4 M = cur->modeltransforms[i];
 
             shader->modelview = cur_VM * M; // DONE: HW3: Without updating cur_VM, modelview would just be camera's view matrix.
             shader->material = (cur->models[i])->material;
 
             // The draw command
-            //shader->setUniforms(light["sun"]->shadowMapTexture);
             shader->setUniforms();
             (cur->models[i])->geometry->draw();
         }
@@ -77,15 +70,11 @@ void Scene::draw(void) {
         // Continue the DFS: put all the child nodes of the current node in the stack
         for (size_t i = 0; i < cur->childnodes.size(); i++) {
             dfs_stack.push(cur->childnodes[i]);
-            /**
-             * DONE: (HW3 hint: you should do something here)
-             */
             mat4 T = cur->childtransforms[i];
             matrix_stack.push(cur_VM * T);
         }
 
-    } // End of DFS while loop.
-    // HW3: Your code will only be above this line.
+    }
 }
 
 void Scene::drawLightCameraView() {
@@ -93,15 +82,6 @@ void Scene::drawLightCameraView() {
     lightCamera->computeLightCameraMatrices();
     depthShader->view = lightCamera->view;
     depthShader->projection = lightCamera->proj;
-    /*depthShader->nlights = light.size();
-    depthShader->lightpositions.resize(depthShader->nlights);
-    depthShader->lightcolors.resize(depthShader->nlights);
-    int count = 0;
-    for (std::pair<std::string, Light*> entry : light) {
-        depthShader->lightpositions[count] = (entry.second)->position;
-        depthShader->lightcolors[count] = (entry.second)->color;
-        count++;
-    }*/
 
     // Define stacks for depth-first search (DFS)
     std::stack < Node* > dfs_stack;
@@ -111,19 +91,12 @@ void Scene::drawLightCameraView() {
     Node* cur = node["world"]; // root of the tree
     mat4 cur_VM = lightCamera->view; // HW3: You will update this current modelview during the depth first search.  Initially, we are at the "world" node, whose modelview matrix is just camera's view matrix.
 
-    // HW3: The following is the beginning of the depth-first search algorithm.
-    // HW3: The depth-first search for the node traversal has already been implemented (cur, dfs_stack).
-    // HW3: All you have to do is to also update the states of (cur_VM, matrix_stack) alongside the traversal.  You will only need to modify starting from this line.
     dfs_stack.push(cur);
     matrix_stack.push(cur_VM);
     // Compute total number of connectivities in the graph; this would be an upper bound for
     // the stack size in the depth first search over the directed acyclic graph
     int total_number_of_edges = 0;
     for (const auto& n : node) total_number_of_edges += n.second->childnodes.size();
-
-    // If you want to print some statistics of your scene graph
-    // std::cout << "total numb of nodes = " << node.size() << std::endl;
-    // std::cout << "total number of edges = " << total_number_of_edges << std::endl;
 
     while (!dfs_stack.empty()) {
         // Detect whether the search runs into infinite loop by checking whether the stack is longer than the number of edges in the graph.
@@ -139,11 +112,9 @@ void Scene::drawLightCameraView() {
         // draw all the models at the current node
         for (size_t i = 0; i < cur->models.size(); i++) {
             // Prepare to draw the geometry. Assign the modelview and the material.
-
             mat4 M = cur->modeltransforms[i];
 
             depthShader->modelview = cur_VM * M; 
-            //depthShader->material = (cur->models[i])->material;
 
             // The draw command
             depthShader->setUniforms();
@@ -156,6 +127,5 @@ void Scene::drawLightCameraView() {
             mat4 T = cur->childtransforms[i];
             matrix_stack.push(cur_VM * T);
         }
-
     }
 }

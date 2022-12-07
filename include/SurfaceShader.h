@@ -16,6 +16,7 @@ struct SurfaceShader : Shader {
 
     // modelview and projection
     glm::mat4 view = glm::mat4(1.0f); GLuint view_loc;
+    glm::mat4 lightview = glm::mat4(1.0f); GLuint lightview_loc;
     glm::mat4 modelview = glm::mat4(1.0f); GLuint modelview_loc;
     glm::mat4 projection = glm::mat4(1.0f); GLuint projection_loc;
     glm::mat4 lightproj = glm::mat4(1.0f); GLuint lightproj_loc;
@@ -41,6 +42,7 @@ struct SurfaceShader : Shader {
     
     void initUniforms(){
         view_loc  = glGetUniformLocation( program, "view" );
+        lightview_loc  = glGetUniformLocation( program, "lightview" );
         modelview_loc  = glGetUniformLocation( program, "modelview" );
         projection_loc = glGetUniformLocation( program, "projection" );
         lightproj_loc = glGetUniformLocation( program, "lightproj" );
@@ -59,6 +61,7 @@ struct SurfaceShader : Shader {
     //void setUniforms(GLuint shadowMap) {
     void setUniforms(){
         glUniformMatrix4fv(view_loc, 1, GL_FALSE, &view[0][0]);
+        glUniformMatrix4fv(lightview_loc, 1, GL_FALSE, &lightview[0][0]);
         glUniformMatrix4fv(modelview_loc, 1, GL_FALSE, &modelview[0][0]);
         glUniformMatrix4fv(projection_loc, 1, GL_FALSE, &projection[0][0]);
         glUniformMatrix4fv(lightproj_loc, 1, GL_FALSE, &lightproj[0][0]);
@@ -67,7 +70,7 @@ struct SurfaceShader : Shader {
         glUniform4fv( specular_loc , 1, &(material -> specular[0]) );
         glUniform4fv( emision_loc  , 1, &(material -> emision[0])  );
         glUniform1fv( shininess_loc, 1, &(material -> shininess)   );
-        glUniform1i( shadowMap_loc, shadowMap );
+        glUniform1i( shadowMap_loc, 0 );
         glUniform1i( enablelighting_loc, enablelighting );
         glUniform1i( nlights_loc, nlights );
         glUniform4fv( lightpositions_loc, GLsizei(nlights), &lightpositions[0][0] );
