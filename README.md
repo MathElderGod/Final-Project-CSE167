@@ -21,3 +21,8 @@ It renders the scene from the light’s perspective, generating a depth map to a
 - GLFW & GLEW – Window and OpenGL extension handling.
 - GLM – Math library for vector and matrix operations.
 - Microsoft Visual Studio – Development environment.
+
+## Contributors
+
+- Alexander G. Arias
+- Alex Simonyan 
